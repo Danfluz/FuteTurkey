@@ -1,3 +1,5 @@
+import time
+
 from bs4 import BeautifulSoup
 import requests
 import os
@@ -247,12 +249,22 @@ class App:
                 nomedotime = time.findNext('div', class_='name').text
                 colocacao = time.findNext('div', class_='pos').text
                 posicao[nomedotime] = colocacao
+            if len(posicao) < 2:
+                linhas2 = tabelas.find_all_next('div', class_='standingrow highlite mark')
+                for time in linhas2:
+                    nomedotime = time.findNext('div', class_='name').text
+                    colocacao = time.findNext('div', class_='pos').text
+                    posicao[nomedotime] = colocacao
         else:
             for linha in tabelas:
                 nomedotime = linha.findNext('div', class_='name').text
                 pos_um = linha.find_next('div', class_='standingrow highlite')
                 if pos_um == None: pos_um = linha.find_next('div', class_='standingrow highlite mark')
-                colocacao = pos_um.findNext('div', class_='pos').text
+                try:
+                    colocacao = pos_um.findNext('div', class_='pos').text
+                except AttributeError:
+                    if 'No team standing' in linha.text:
+                        colocacao = 0
                 posicao[nomedotime] = colocacao
 
         return posicao
@@ -487,13 +499,16 @@ class App:
 
 hometeam = input('Insira o nome do time 1: ')
 awayteam = input('Insira o nome do time 2: ')
+# hometeam = 'Nautico Recife'
+# awayteam = 'Santa Cruz'
+
 app = App(hometeam, awayteam)
 previsao = app.prever()
 print('')
 print('Calculando estatísticas. Aguarde...')
 print('')
 print('\t== Dados históricos == ')
-print(f'\nSe enfrentaram:{app.confrontos()[f"disputas"]} vezes'
+print(f'\nSe enfrentaram: {app.confrontos()[f"disputas"]} vezes'
       f'\n{hometeam} venceu: {app.confrontos()[f"{hometeam}-ganhou"]} vezes'
       f'\n{awayteam} venceu: {app.confrontos()[f"{awayteam}-ganhou"]} vezes'
       f'\nEmpataram: {app.confrontos()[f"empates"]} vezes')
