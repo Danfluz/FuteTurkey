@@ -10,10 +10,13 @@ class App:
     time1 = 'Nautico Recife'
     time2 = 'Sport Recife'
 
-    def __init__(self, time1, time2):
+    def __init__(self, time1, time2, selecao=False):
         self.time1 = time1
         self.time2 = time2
-        url = requests.get(f'https://www.statarea.com/compare/teams/{time1} {self.pais}/{time2} {self.pais}').content
+        if selecao == False:
+            url = requests.get(f'https://www.statarea.com/compare/teams/{time1} {self.pais}/{time2} {self.pais}').content
+        else:
+            url = requests.get(f'https://www.statarea.com/compare/teams/{time1} ({time1})/{time2} ({time2})').content
         self.site = BeautifulSoup(url, 'html.parser')
 
     def sequencia_jogos(self):
@@ -77,6 +80,8 @@ class App:
     def estatisticas10jogos(self):
 
         statsdezjogos = self.site.find('div', class_='teamsstatistics')
+        if statsdezjogos == None:
+            return 'Um dos times estáinválido'
         time1stats = statsdezjogos.find_all('div', class_='halfcontainer')[0]
         time2stats = statsdezjogos.find_all('div', class_='halfcontainer')[1]
         doistimesstats = [time1stats, time2stats]
@@ -502,7 +507,7 @@ awayteam = input('Insira o nome do time 2: ')
 # hometeam = 'Nautico Recife'
 # awayteam = 'Santa Cruz'
 
-app = App(hometeam, awayteam)
+app = App(hometeam, awayteam, selecao=True)
 previsao = app.prever()
 print('')
 print('Calculando estatísticas. Aguarde...')
